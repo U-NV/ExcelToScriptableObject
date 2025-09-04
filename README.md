@@ -59,7 +59,7 @@ Unity编辑器插件，将Excel数据自动转换为ScriptableObject资源。支
 - 点击"生成"按钮开始转换
 - 或使用"重新生成所有文件"进行批量处理
 
-## �� 详细使用指南
+## 📖 详细使用指南
 
 ### 配置说明
 
@@ -159,7 +159,7 @@ public class ConfigManager : MonoBehaviour
 }
 ```
 
-## �� 使用场景
+## 🎯 使用场景
 
 ### 游戏配置管理
 - 将游戏配置数据存储在Excel中，自动转换为ScriptableObject
@@ -230,7 +230,7 @@ public class ValidatedConfigSO : ScriptableObject, IExcelLineData
 - **绝对路径**: 支持绝对路径配置
 - **路径验证**: 自动验证路径有效性
 
-## �� 故障排除
+## 🔧 故障排除
 
 ### 常见问题
 
@@ -273,11 +273,11 @@ if (so != null)
 - **依赖包**: ExcelReader（已包含在依赖中）
 - **支持格式**: .xlsx, .xls
 
-## �� 许可证
+## 📄 许可证
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
 
-## �� 贡献
+## 🤝 贡献
 
 欢迎提交Issue和Pull Request来改进这个工具包：
 
