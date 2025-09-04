@@ -21,19 +21,19 @@
     "url": "https://github.com/U-NV"
   },
   "license": "MIT",
-  "homepage": "https://github.com/U-NV/ExcelToSO",
+  "homepage": "https://github.com/U-NV/ExcelToScriptableObject",
   "repository": {
     "type": "git",
-    "url": "https://github.com/U-NV/ExcelToSO.git"
+    "url": "https://github.com/U-NV/ExcelToScriptableObject.git"
   },
   "bugs": {
-    "url": "https://github.com/U-NV/ExcelToSO/issues"
+    "url": "https://github.com/U-NV/ExcelToScriptableObject/issues"
   },
   "category": "Editor",
   "dependencies": {
     "com.u0ugames.exceldataparser": "https://github.com/U-NV/ExcelDataParser.git",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
-  "changelogUrl": "https://github.com/U-NV/ExcelToSO/blob/main/CHANGELOG.md",
-  "documentationUrl": "https://github.com/U-NV/ExcelToSO/blob/main/README.md"
+  "changelogUrl": "https://github.com/U-NV/ExcelToScriptableObject/blob/main/CHANGELOG.md",
+  "documentationUrl": "https://github.com/U-NV/ExcelToScriptableObject/blob/main/README.md"
 }

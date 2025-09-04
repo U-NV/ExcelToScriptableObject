@@ -33,7 +33,7 @@ Unity编辑器插件，将Excel数据自动转换为ScriptableObject资源。支
 ### 方法一：Package Manager安装（推荐）
 1. 在Unity编辑器中打开 `Window > Package Manager`
 2. 点击左上角的 `+` 按钮，选择 `Add package from git URL`
-3. 输入：`https://github.com/U-NV/ExcelToSO.git`
+3. 输入：`https://github.com/U-NV/ExcelToScriptableObject.git`
 4. 点击 `Add` 完成安装
 
 ### 方法二：手动安装
@@ -292,9 +292,9 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 如有问题，请通过以下方式联系：
 
 - �� 邮箱: haowei1117@foxmail.com
-- �� GitHub Issues: [提交问题](https://github.com/U-NV/ExcelToSO/issues)
-- �� GitHub仓库: [ExcelToSO](https://github.com/U-NV/ExcelToSO)
-- 📖 文档: [在线文档](https://github.com/U-NV/ExcelToSO/wiki)
+- �� GitHub Issues: [提交问题](https://github.com/U-NV/ExcelToScriptableObject/issues)
+- �� GitHub仓库: [ExcelToScriptableObject](https://github.com/U-NV/ExcelToScriptableObject)
+- 📖 文档: [在线文档](https://github.com/U-NV/ExcelToScriptableObject/wiki)
 
 ## 📝 更新日志
 
