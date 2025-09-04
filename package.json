@@ -31,7 +31,6 @@
   },
   "category": "Editor",
   "dependencies": {
-    "com.u0ugames.excel-data-parser": "https://github.com/U-NV/ExcelDataParser.git#1.0.0",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
   "changelogUrl": "https://github.com/U-NV/ExcelToScriptableObject/blob/main/CHANGELOG.md",
