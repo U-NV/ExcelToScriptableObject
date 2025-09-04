@@ -1,0 +1,39 @@
+{
+  "name": "com.u0ugames.exceltoscriptableobject",
+  "displayName": "Excel to ScriptableObject",
+  "description": "Unity编辑器插件，将Excel数据自动转换为ScriptableObject资源。支持单文件和多文件生成模式，具备完善的异常处理、数据验证和性能优化。适用于游戏配置数据管理、表格数据导入等场景。",
+  "version": "1.0.0",
+  "unity": "2019.4",
+  "unityRelease": "25f1",
+  "keywords": [
+    "unity",
+    "excel",
+    "scriptableobject",
+    "data-conversion",
+    "configuration",
+    "game-development",
+    "editor-tools",
+    "automation"
+  ],
+  "author": {
+    "name": "U-NV",
+    "email": "haowei1117@foxmail.com",
+    "url": "https://github.com/U-NV"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/U-NV/ExcelToSO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/U-NV/ExcelToSO.git"
+  },
+  "bugs": {
+    "url": "https://github.com/U-NV/ExcelToSO/issues"
+  },
+  "category": "Editor",
+  "dependencies": {
+    "com.u0ugames.exceldataparser": "https://github.com/U-NV/ExcelDataParser.git",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "changelogUrl": "https://github.com/U-NV/ExcelToSO/blob/main/CHANGELOG.md",
+  "documentationUrl": "https://github.com/U-NV/ExcelToSO/blob/main/README.md"
+}

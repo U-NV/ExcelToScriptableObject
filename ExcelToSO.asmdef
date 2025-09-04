@@ -1,0 +1,16 @@
+{
+    "name": "ExcelToSO",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d346bd360ed37924280edd3b98efdf83"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

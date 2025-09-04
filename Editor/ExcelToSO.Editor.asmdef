@@ -1,0 +1,19 @@
+{
+    "name": "ExcelEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:bd8d961d2120b5342a82aa7401b10a85",
+        "GUID:d346bd360ed37924280edd3b98efdf83"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
