@@ -31,7 +31,6 @@
   },
   "category": "Editor",
   "dependencies": {
-    "com.u0ugames.excel-data-parser": "https://github.com/U-NV/ExcelDataParser.git"
 
   },
   "changelogUrl": "https://github.com/U-NV/ExcelToScriptableObject/blob/main/CHANGELOG.md",
