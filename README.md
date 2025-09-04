@@ -30,6 +30,14 @@ Unity编辑器插件，将Excel数据自动转换为ScriptableObject资源。支
 
 ## 📦 安装
 
+### ⚠️ 重要提示
+**本插件依赖 ExcelDataParser 包，请先安装依赖包：**
+
+1. 在Unity编辑器中打开 `Window > Package Manager`
+2. 点击左上角的 `+` 按钮，选择 `Add package from git URL`
+3. 输入：`https://github.com/U-NV/ExcelDataParser.git`
+4. 点击 `Add` 完成依赖包安装
+
 ### 方法一：Package Manager安装（推荐）
 1. 在Unity编辑器中打开 `Window > Package Manager`
 2. 点击左上角的 `+` 按钮，选择 `Add package from git URL`
@@ -270,7 +278,7 @@ if (so != null)
 
 - **Unity版本**: Unity 2019.4.25f1 或更高版本
 - **.NET Framework**: 4.7.1 或更高版本
-- **依赖包**: ExcelReader（已包含在依赖中）
+- **依赖包**: [ExcelDataParser](https://github.com/U-NV/ExcelDataParser.git)（需要单独安装）
 - **支持格式**: .xlsx, .xls
 
 ## 📄 许可证
