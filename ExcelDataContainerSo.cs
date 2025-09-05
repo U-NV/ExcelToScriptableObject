@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using U0UGames.Excel;
+using U0UGames.ExcelDataParser;
 using UnityEngine;
 
 namespace U0UGames.Excel2SO
