@@ -113,7 +113,9 @@ namespace U0UGames.Excel2SO.Editor
                 }
                 else
                 {
-                    generateConfig.keyName = EditorGUILayout.TextField("关键词属性名称:", generateConfig.keyName);
+                    EditorGUILayout.LabelField("使用Sheet名词作为文件名词");
+
+                    // generateConfig.keyName = EditorGUILayout.TextField("文件名称:", generateConfig.keyName);
                 }
             }
             {

@@ -6,6 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using U0UGames.ExcelDataParser;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 // using DG.Tweening.Plugins.Core.PathCore;
@@ -25,24 +26,69 @@ namespace U0UGames.Excel2SO.Editor
         private const string LogPrefix = "<color=#00ff00>[ExcelAutoSO]</color> ";
         
         /// <summary>
-        /// 运行时程序集缓存
+        /// 运行时程序集缓存列表
         /// </summary>
-        private static Assembly _runtimeAssembly;
+        private static List<Assembly> _runtimeAssemblies;
         
         /// <summary>
-        /// 获取运行时程序集
+        /// 获取所有运行时程序集
         /// 用于反射查找ScriptableObject类型
+        /// 包括 Assembly-CSharp 以及其他自定义程序集
         /// </summary>
-        public static Assembly RuntimeAssembly
+        private static List<Assembly> GetRuntimeAssemblies()
         {
-            get
+            if (_runtimeAssemblies == null)
             {
-                if (_runtimeAssembly == null)
+                _runtimeAssemblies = new List<Assembly>();
+                
+                // 获取所有已加载的程序集
+                var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                
+                // 过滤出运行时程序集（排除Editor程序集和系统程序集）
+                foreach (var assembly in allAssemblies)
                 {
-                    _runtimeAssembly = System.Reflection.Assembly.Load("Assembly-CSharp");
+                    var assemblyName = assembly.GetName().Name;
+                    
+                    // 跳过系统程序集
+                    if (assemblyName.StartsWith("System") ||
+                        assemblyName.StartsWith("Microsoft") ||
+                        assemblyName.StartsWith("Unity") ||
+                        assemblyName.StartsWith("UnityEditor") ||
+                        assemblyName.StartsWith("UnityEngine") ||
+                        assemblyName.StartsWith("mscorlib") ||
+                        assemblyName.StartsWith("netstandard") ||
+                        assemblyName.StartsWith("nunit") ||
+                        assemblyName.StartsWith("Mono."))
+                    {
+                        continue;
+                    }
+                    
+                    // 跳过Editor程序集（通常以.Editor结尾）
+                    if (assemblyName.EndsWith(".Editor"))
+                    {
+                        continue;
+                    }
+                    
+                    // 包含运行时程序集
+                    _runtimeAssemblies.Add(assembly);
                 }
-                return _runtimeAssembly;
+                
+                // 确保至少包含 Assembly-CSharp
+                try
+                {
+                    var assemblyCSharp = Assembly.Load("Assembly-CSharp");
+                    if (!_runtimeAssemblies.Contains(assemblyCSharp))
+                    {
+                        _runtimeAssemblies.Add(assemblyCSharp);
+                    }
+                }
+                catch
+                {
+                    // Assembly-CSharp 可能不存在，忽略
+                }
             }
+            
+            return _runtimeAssemblies;
         }
         /// <summary>
         /// Excel转ScriptableObject配置结构体
@@ -118,20 +164,43 @@ namespace U0UGames.Excel2SO.Editor
                 }
                 else
                 {
-                    foreach (var classType in RuntimeAssembly.GetTypes())
+                    // 在所有运行时程序集中查找类型
+                    foreach (var assembly in GetRuntimeAssemblies())
                     {
-                        if (classType.FullName == null )continue;
-                        var namePath = classType.FullName.Split(".");
-                        var lastClassName = namePath[namePath.Length - 1];
-                        if (lastClassName == className)
+                        try
                         {
-                            soClass = classType;
-                            break;
+                            foreach (var classType in assembly.GetTypes())
+                            {
+                                if (classType.FullName == null) continue;
+                                var namePath = classType.FullName.Split(".");
+                                var lastClassName = namePath[namePath.Length - 1];
+                                if (lastClassName == className)
+                                {
+                                    soClass = classType;
+                                    break;
+                                }
+                            }
+                            
+                            if (soClass != null)
+                            {
+                                break; // 找到类型，退出程序集循环
+                            }
+                        }
+                        catch (ReflectionTypeLoadException ex)
+                        {
+                            // 某些程序集可能无法完全加载，记录警告但继续
+                            Debug.LogWarning($"{LogPrefix} 加载程序集 {assembly.GetName().Name} 时出现类型加载异常: {ex.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            // 其他异常也记录但继续
+                            Debug.LogWarning($"{LogPrefix} 处理程序集 {assembly.GetName().Name} 时出现异常: {ex.Message}");
                         }
                     }
+                    
                     if (soClass == null)
                     {
-                        Debug.LogError($"{LogPrefix} 找不到类型：{className}");
+                        Debug.LogError($"{LogPrefix} 找不到类型：{className}，已搜索 {GetRuntimeAssemblies().Count} 个程序集");
                     }
                 }
             }
@@ -179,7 +248,7 @@ namespace U0UGames.Excel2SO.Editor
                     return;
                 }
 
-                var excelFullPath = UnityPathUtility.AssetPathToFullPath(generateConfig.excelFileRootPath);
+                var excelFullPath = UnityPathUtility.RootFolderPathToFullPath(generateConfig.excelFileRootPath);
                 var exportFolderFullPath = UnityPathUtility.AssetPathToFullPath(generateConfig.resultFolderRootPath);
                 
                 if (!File.Exists(excelFullPath))
@@ -329,8 +398,16 @@ namespace U0UGames.Excel2SO.Editor
                     Debug.LogWarning($"{LogPrefix} Sheet '{config.sheetName}' 中没有数据行");
                     return;
                 }
+
+                if (rawDataList.Count > 1)
+                {
+                    Debug.LogWarning($"{LogPrefix} Sheet '{config.sheetName}' 中有多行数据，只处理第一行");
+                    return;
+                }
                 
                 // 创建文件夹
+                // Debug.Log($"FileName:{config.soClass.Name} savePath:{config.saveFolderFullPath}");
+
                 if (!TryCreateFolder(config.saveFolderFullPath))
                 {
                     Debug.LogError($"{LogPrefix} 无法创建输出文件夹: {config.saveFolderFullPath}");
@@ -349,7 +426,7 @@ namespace U0UGames.Excel2SO.Editor
                 string json;
                 try
                 {
-                    json = JsonConvert.SerializeObject(rawDataList);
+                    json = JsonConvert.SerializeObject(rawDataList[0]);
                 }
                 catch (Exception ex)
                 {
@@ -359,59 +436,7 @@ namespace U0UGames.Excel2SO.Editor
 
                 EditorApplication.delayCall += () =>
                 {
-                    try
-                    {
-                        ExcelDataContainerSO _target = null;
-                        
-                        // 检查文件是否已存在
-                        if (File.Exists(assetFullPath))
-                        {
-                            _target = AssetDatabase.LoadAssetAtPath<ExcelDataContainerSO>(assetPath);
-                            if (_target == null)
-                            {
-                                Debug.LogWarning($"{LogPrefix} 无法加载现有资源: {assetPath}");
-                            }
-                        }
-                        
-                        // 如果文件不存在或加载失败，创建新文件
-                        if (_target == null)
-                        {
-                            try
-                            {
-                                _target = ScriptableObject.CreateInstance(config.soClass) as ExcelDataContainerSO;
-                                if (_target == null)
-                                {
-                                    Debug.LogError($"{LogPrefix} 无法创建ScriptableObject实例，类型: {config.soClass?.Name}");
-                                    return;
-                                }
-                                
-                                AssetDatabase.CreateAsset(_target, assetPath);
-                                Debug.Log($"{LogPrefix} 创建新的ScriptableObject文件: {assetPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.LogError($"{LogPrefix} 创建ScriptableObject失败: {ex.Message}");
-                                return;
-                            }
-                        }
-
-                        // 加载数据
-                        try
-                        {
-                            _target.LoadRawData(rawData);
-                            _target.LoadJson(json);
-                            EditorUtility.SetDirty(_target);
-                            Debug.Log($"{LogPrefix} 成功更新ScriptableObject: {assetPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"{LogPrefix} 加载数据到ScriptableObject失败: {ex.Message}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"{LogPrefix} 处理ScriptableObject时发生错误: {ex.Message}");
-                    }
+                    TryCreateSoFile(assetFullPath, json, config.soClass);
                 };
             }
             catch (Exception ex)
@@ -454,6 +479,83 @@ namespace U0UGames.Excel2SO.Editor
             return null;
         }
         
+        private static ScriptableObject TryCreateSoFile(string assetFullPath, string lineJson, Type soClass){
+            ScriptableObject _target = null;
+                                
+            string assetPath = UnityPathUtility.FullPathToAssetPath(assetFullPath);
+            
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                Debug.LogError($"{LogPrefix} 无法转换资源路径: {assetFullPath}");
+                return null;
+            }
+
+            // 检查文件是否已存在
+            if (File.Exists(assetFullPath))
+            {
+                try
+                {
+                    var existingFile = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+                    if (existingFile != null && existingFile.GetType() == soClass)
+                    {
+                        _target = existingFile;
+                    }
+                    else
+                    {
+                        // 类型不匹配，删除旧文件
+                        File.Delete(assetFullPath);
+                        Debug.Log($"{LogPrefix} 删除类型不匹配的旧文件: {assetPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{LogPrefix} 处理现有文件时出错: {ex.Message}");
+                }
+            }
+            
+            // 如果文件不存在或类型不匹配，创建新文件
+            if (_target == null)
+            {
+                try
+                {
+                    _target = ScriptableObject.CreateInstance(soClass);
+                    if (_target == null)
+                    {
+                        Debug.LogError($"{LogPrefix} 无法创建ScriptableObject实例，类型: {soClass.Name}");
+                        return null;
+                    }
+                    
+                    AssetDatabase.CreateAsset(_target, assetPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{LogPrefix} 创建ScriptableObject失败: {ex.Message}");
+                    return null;
+                }
+            }
+            
+            // 加载数据
+            try
+            {
+                JsonUtility.FromJsonOverwrite(lineJson, _target);
+                
+                if (_target is IExcelLineData lineData)
+                {
+                    lineData.ProcessData();
+                    EditorUtility.SetDirty(_target);
+                    return _target;
+                }
+                else
+                {
+                    Debug.LogError($"{LogPrefix} ScriptableObject未实现IExcelLineData接口: {assetPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LogPrefix} 加载数据到ScriptableObject失败: {ex.Message} \n{lineJson}");
+            }
+            return null;
+        }
         
         /// <summary>
         /// 将Sheet数据生成为多个ScriptableObject文件
@@ -550,14 +652,7 @@ namespace U0UGames.Excel2SO.Editor
                                     continue;
                                 }
                                 
-                                string assetFullPath = Path.Combine(config.saveFolderFullPath, $"{assetName}.asset");
-                                string assetPath = UnityPathUtility.FullPathToAssetPath(assetFullPath);
-                                
-                                if (string.IsNullOrEmpty(assetPath))
-                                {
-                                    Debug.LogError($"{LogPrefix} 无法转换资源路径: {assetFullPath}");
-                                    continue;
-                                }
+
 
                                 string lineJson;
                                 try
@@ -570,73 +665,13 @@ namespace U0UGames.Excel2SO.Editor
                                     continue;
                                 }
 
-                                ScriptableObject _target = null;
-                                
-                                // 检查文件是否已存在
-                                if (File.Exists(assetFullPath))
-                                {
-                                    try
-                                    {
-                                        var existingFile = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-                                        if (existingFile != null && existingFile.GetType() == soClass)
-                                        {
-                                            _target = existingFile;
-                                        }
-                                        else
-                                        {
-                                            // 类型不匹配，删除旧文件
-                                            File.Delete(assetFullPath);
-                                            Debug.Log($"{LogPrefix} 删除类型不匹配的旧文件: {assetPath}");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.LogError($"{LogPrefix} 处理现有文件时出错: {ex.Message}");
-                                    }
+                                string assetFullPath = Path.Combine(config.saveFolderFullPath, $"{assetName}.asset");
+                                var newFile = TryCreateSoFile(assetFullPath, lineJson, soClass);
+                                if(newFile!=null){
+                                    newFileNameSet.Add(assetName);
+                                    successCount++;
                                 }
                                 
-                                // 如果文件不存在或类型不匹配，创建新文件
-                                if (_target == null)
-                                {
-                                    try
-                                    {
-                                        _target = ScriptableObject.CreateInstance(soClass);
-                                        if (_target == null)
-                                        {
-                                            Debug.LogError($"{LogPrefix} 无法创建ScriptableObject实例，类型: {soClass.Name}");
-                                            continue;
-                                        }
-                                        
-                                        AssetDatabase.CreateAsset(_target, assetPath);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Debug.LogError($"{LogPrefix} 创建ScriptableObject失败: {ex.Message}");
-                                        continue;
-                                    }
-                                }
-                                
-                                // 加载数据
-                                try
-                                {
-                                    JsonUtility.FromJsonOverwrite(lineJson, _target);
-                                    
-                                    if (_target is IExcelLineData lineData)
-                                    {
-                                        lineData.ProcessData();
-                                        EditorUtility.SetDirty(_target);
-                                        newFileNameSet.Add(assetName);
-                                        successCount++;
-                                    }
-                                    else
-                                    {
-                                        Debug.LogError($"{LogPrefix} ScriptableObject未实现IExcelLineData接口: {assetPath}");
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Debug.LogError($"{LogPrefix} 加载数据到ScriptableObject失败: {ex.Message}");
-                                }
                             }
                             catch (Exception ex)
                             {
